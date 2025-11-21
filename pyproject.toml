@@ -47,6 +47,15 @@ build-backend = "hatchling.build"
 [tool.coverage.report]
 exclude_also = ["raise NotImplementedError"]
 
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.sdist]
+include = ["type_analyzer"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["type_analyzer"]
+
 [tool.mypy]
 check_untyped_defs = true
 disallow_any_generics = true

@@ -16,7 +16,7 @@ from typing import (
 @dataclass(repr=False, eq=False, frozen=True, kw_only=True, slots=True)
 class MatchingTypesConfig:
     ignore_none: bool = field(default=False)
-    with_mro: bool = field(default=False)
+    with_bases: bool = field(default=False)
     with_origin: bool = field(default=False)
     with_type_alias_value: bool = field(default=False)
 
@@ -99,7 +99,7 @@ def _iter_matching_types(
             if config.with_origin:
                 yield origin
 
-        if config.with_mro and (bases := _get_bases(type_hint, origin)):
+        if config.with_bases and (bases := _get_bases(type_hint, origin)):
             generics = _get_generics(type_hint, origin)
             yield from _iter_matching_types(bases, config, generics)
 

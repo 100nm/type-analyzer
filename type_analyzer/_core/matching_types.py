@@ -6,7 +6,6 @@ from typing import (
     Any,
     Generic,
     TypeAliasType,
-    TypeIs,
     TypeVar,
     Union,
     get_args,
@@ -46,7 +45,7 @@ def _get_generics(type_hint: Any, origin: Any) -> Mapping[TypeVar, Any]:
     return dict(zip(parameters, args))
 
 
-def _is_type_var(type_hint: Any) -> TypeIs[TypeVar]:
+def _is_type_var(type_hint: Any) -> bool:
     return isinstance(type_hint, TypeVar)
 
 

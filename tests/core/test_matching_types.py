@@ -29,7 +29,7 @@ def test_matching_types_with_optional_and_ignore_none() -> None:
 def test_matching_types_with_class() -> None:
     class Class: ...
 
-    config = MatchingTypesConfig(with_mro=True)
+    config = MatchingTypesConfig(with_bases=True)
     assert matching_types(Class, config) == (Class, object)
 
 
@@ -40,7 +40,7 @@ def test_matching_types_with_generic_class() -> None:
 
     class C[T1, T2](A[T1], B[T2]): ...
 
-    config = MatchingTypesConfig(with_mro=True)
+    config = MatchingTypesConfig(with_bases=True)
     assert matching_types(C[str, int], config) == (C[str, int], A[str], B[int])
 
 
@@ -78,7 +78,7 @@ def test_matching_types_with_paramspec() -> None:
     )
 
 
-def test_matching_types_with_mro_and_type_alias() -> None:
+def test_matching_types_with_bases_and_type_alias() -> None:
     type String = str
-    config = MatchingTypesConfig(with_mro=True, with_type_alias_value=True)
+    config = MatchingTypesConfig(with_bases=True, with_type_alias_value=True)
     assert matching_types(String, config) == (String, str, object)

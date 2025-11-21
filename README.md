@@ -5,6 +5,14 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/type-analyzer.svg?color=blue)](https://pypistats.org/packages/type-analyzer)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
+## Installation
+
+⚠️ _Requires Python 3.12 or higher_
+
+```bash
+pip install type-analyzer
+```
+
 ## Quick start
 
 ### matching_types
@@ -27,16 +35,16 @@ matching_types(StringOr[int], config)
 
 # ----- Generic classes -----
 
-class A[T]: 
+class A[T]:
     ...
 
-class B[T]: 
+class B[T]:
     ...
 
 class C[T1, T2](A[T1], B[T2]):
     ...
 
-config = MatchingTypesConfig(with_mro=True)
+config = MatchingTypesConfig(with_bases=True)
 matching_types(C[str, int], config)
 # => (C[str, int], A[str], B[int])
 ```

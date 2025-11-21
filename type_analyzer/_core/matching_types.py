@@ -26,8 +26,14 @@ def matching_types(
     /,
     config: MatchingTypesConfig | None = None,
 ) -> tuple[Any, ...]:
-    type_hints = (type_hint,)
-    return tuple(dict.fromkeys(_iter_matching_types(type_hints, config)))
+    return tuple(
+        dict.fromkeys(
+            _iter_matching_types(
+                (type_hint,),
+                config,
+            ),
+        ),
+    )
 
 
 def _get_bases(type_hint: Any, origin: Any) -> tuple[Any, ...]:

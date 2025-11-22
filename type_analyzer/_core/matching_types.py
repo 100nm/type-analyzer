@@ -76,7 +76,7 @@ def _iter_matching_types(
             continue
 
         if _is_type_var(type_hint):
-            yield params[type_hint]
+            yield params.get(type_hint, type_hint)
             continue
 
         origin = get_origin(type_hint)
@@ -92,10 +92,11 @@ def _iter_matching_types(
             yield type_hint
 
         else:
-            iter_args = (
-                params[arg] if _is_type_var(arg) else arg for arg in get_args(type_hint)
+            args = tuple(
+                params.get(arg, arg) if _is_type_var(arg) else arg
+                for arg in get_args(type_hint)
             )
-            yield origin[*iter_args]
+            yield origin[*args]
 
             if config.with_origin:
                 yield origin

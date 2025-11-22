@@ -1,5 +1,5 @@
 from types import NoneType
-from typing import Annotated, Optional
+from typing import Annotated, Optional, TypeVar
 
 from type_analyzer import MatchingTypesConfig, matching_types
 
@@ -39,6 +39,15 @@ def test_matching_types_with_generic_class() -> None:
 
     config = MatchingTypesConfig(with_bases=True)
     assert matching_types(C[str, int], config) == (C[str, int], A[str], B[int])
+
+
+def test_matching_types_with_generic_class_and_type_var_generic() -> None:
+    class Class[T]: ...
+
+    _T = TypeVar("_T")
+
+    config = MatchingTypesConfig(with_bases=True, with_origin=True)
+    assert matching_types(Class[_T], config) == (Class[_T], Class)  # type: ignore[valid-type]
 
 
 def test_matching_types_with_origin() -> None:

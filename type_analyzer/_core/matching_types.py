@@ -21,19 +21,22 @@ class MatchingTypesConfig:
     with_type_alias_value: bool = field(default=False)
 
 
+def iter_matching_types(
+    type_hint: Any,
+    /,
+    config: MatchingTypesConfig | None = None,
+) -> Iterator[Any]:
+    config = config or MatchingTypesConfig()
+    type_hints = (type_hint,)
+    return _iter_matching_types(type_hints, config)
+
+
 def matching_types(
     type_hint: Any,
     /,
     config: MatchingTypesConfig | None = None,
 ) -> tuple[Any, ...]:
-    return tuple(
-        dict.fromkeys(
-            _iter_matching_types(
-                (type_hint,),
-                config,
-            ),
-        ),
-    )
+    return tuple(dict.fromkeys(iter_matching_types(type_hint, config)))
 
 
 def _get_bases(type_hint: Any, origin: Any) -> tuple[Any, ...]:
@@ -55,23 +58,21 @@ def _is_type_var(type_hint: Any) -> bool:
     return isinstance(type_hint, TypeVar)
 
 
-def _is_none(type_hint: Any) -> bool:
+def _is_none_type(type_hint: Any) -> bool:
     return type_hint in (None, NoneType)
 
 
 def _iter_matching_types(
     type_hints: Sequence[Any],
     /,
-    config: MatchingTypesConfig | None = None,
+    config: MatchingTypesConfig,
     params: Mapping[TypeVar, Any] | None = None,
 ) -> Iterator[Any]:
-    config = config or MatchingTypesConfig()
-
     if params is None:
         params = {}
 
     for type_hint in type_hints:
-        if config.ignore_none and _is_none(type_hint):
+        if config.ignore_none and _is_none_type(type_hint):
             continue
 
         if _is_type_var(type_hint):

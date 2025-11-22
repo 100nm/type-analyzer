@@ -1,8 +1,5 @@
-from collections.abc import Callable
 from types import NoneType
 from typing import Annotated, Optional
-
-import pytest
 
 from type_analyzer import MatchingTypesConfig, matching_types
 
@@ -59,23 +56,6 @@ def test_matching_types_with_generic_type_alias() -> None:
     type StringOr[T] = str | T
     config = MatchingTypesConfig(with_type_alias_value=True)
     assert matching_types(StringOr[int], config) == (StringOr[int], str, int)
-
-
-@pytest.mark.skip("Need to associate a variable number of generic parameters")
-def test_matching_types_with_type_var_tuple() -> None:
-    type Tuple[*Ts] = tuple[*Ts]
-    config = MatchingTypesConfig(with_type_alias_value=True)
-    assert matching_types(Tuple[str, int], config) == (Tuple[str, int], tuple[str, int])
-
-
-@pytest.mark.skip("ParamSpec value isn't hashable")
-def test_matching_types_with_paramspec() -> None:
-    type Callback[**P] = Callable[P, None]
-    config = MatchingTypesConfig(with_type_alias_value=True)
-    assert matching_types(Callback[[str, int]], config) == (
-        Callback[[str, int]],
-        Callable[[str, int], None],
-    )
 
 
 def test_matching_types_with_bases_and_type_alias() -> None:

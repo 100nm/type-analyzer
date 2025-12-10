@@ -21,12 +21,15 @@ class MatchingTypesConfig:
     with_type_alias_value: bool = field(default=False)
 
 
+_empty_config = MatchingTypesConfig()
+
+
 def iter_matching_types(
     type_hint: Any,
     /,
     config: MatchingTypesConfig | None = None,
 ) -> Iterator[Any]:
-    config = config or MatchingTypesConfig()
+    config = config or _empty_config
     type_hints = (type_hint,)
     return _iter_matching_types(type_hints, config)
 
@@ -93,7 +96,7 @@ def _iter_matching_types(
 
         else:
             args = tuple(
-                params.get(arg, arg) if _is_type_var(arg) else arg
+                next(_iter_matching_types((arg,), _empty_config, params))
                 for arg in get_args(type_hint)
             )
             yield origin[*args]

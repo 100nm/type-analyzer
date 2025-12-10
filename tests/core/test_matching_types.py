@@ -41,6 +41,21 @@ def test_matching_types_with_generic_class() -> None:
     assert matching_types(C[str, int], config) == (C[str, int], A[str], B[int])
 
 
+def test_matching_types_with_generic_class_and_nested_generics() -> None:
+    class A[T]: ...
+
+    class B[T]: ...
+
+    class C[T1, T2](A[list[T1]], B[list[T2]]): ...
+
+    config = MatchingTypesConfig(with_bases=True)
+    assert matching_types(C[str, int], config) == (
+        C[str, int],
+        A[list[str]],
+        B[list[int]],
+    )
+
+
 def test_matching_types_with_generic_class_and_type_var_generic() -> None:
     class Class[T]: ...
 

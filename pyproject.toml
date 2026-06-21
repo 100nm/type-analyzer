@@ -5,7 +5,7 @@ description = "Functions for introspecting Python type hints."
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
-requires-python = ">=3.12, <3.15"
+requires-python = ">=3.12, <3.16"
 authors = [{ name = "remimd" }]
 keywords = []
 classifiers = [

@@ -14,13 +14,13 @@ def test_matching_types_with_union() -> None:
 
 def test_matching_types_with_optional() -> None:
     assert matching_types(str | None) == (str, NoneType)
-    assert matching_types(Optional[str]) == (str, NoneType)
+    assert matching_types(Optional[str]) == (str, NoneType)  # noqa: UP045
 
 
 def test_matching_types_with_optional_and_ignore_none() -> None:
     config = MatchingTypesConfig(ignore_none=True)
     assert matching_types(str | None, config) == (str,)
-    assert matching_types(Optional[str], config) == (str,)
+    assert matching_types(Optional[str], config) == (str,)  # noqa: UP045
 
 
 def test_matching_types_with_class() -> None:

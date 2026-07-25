@@ -35,14 +35,15 @@ matching_types(StringOr[int], config)
 
 # ----- Generic classes -----
 
-class A[T]:
-    ...
 
-class B[T]:
-    ...
+class A[T]: ...
 
-class C[T1, T2](A[T1], B[T2]):
-    ...
+
+class B[T]: ...
+
+
+class C[T1, T2](A[T1], B[T2]): ...
+
 
 config = MatchingTypesConfig(with_bases=True)
 matching_types(C[str, int], config)

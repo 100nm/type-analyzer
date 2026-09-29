@@ -1,9 +1,10 @@
 # type-analyzer
 
-[![CI](https://github.com/100nm/type-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/100nm/type-analyzer)
-[![PyPI - Version](https://img.shields.io/pypi/v/type-analyzer.svg?color=blue)](https://pypi.org/project/type-analyzer)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/type-analyzer.svg?color=blue)](https://pypistats.org/packages/type-analyzer)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![PyPI - Version](https://shieldcn.dev/pypi/v/type-analyzer.svg?color=3775A9&size=xs&variant=secondary)](https://pypi.org/project/type-analyzer)
+[![PyPI - Downloads](https://shieldcn.dev/pypi/dm/type-analyzer.svg?color=3775A9&size=xs&variant=secondary)](https://pypistats.org/packages/type-analyzer)
+[![GitHub Stars](https://shieldcn.dev/github/stars/100nm/type-analyzer.svg?size=xs&variant=secondary)](https://github.com/100nm/type-analyzer/stargazers)
+[![CI](https://shieldcn.dev/github/ci/100nm/type-analyzer.svg?size=xs&variant=secondary&workflow=ci.yml)](https://github.com/100nm/type-analyzer/actions/workflows/ci.yml)
+[![Ruff](https://shieldcn.dev/badge/code_style-Ruff-261230.svg?logo=ruff&size=xs&variant=secondary)](https://github.com/astral-sh/ruff)
 
 ## Installation
 

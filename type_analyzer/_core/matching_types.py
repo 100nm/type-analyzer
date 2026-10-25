@@ -5,6 +5,7 @@ from typing import (
     Annotated,
     Any,
     Generic,
+    Self,
     TypeAliasType,
     TypeVar,
     Union,
@@ -21,6 +22,56 @@ class MatchingTypesConfig:
     with_type_alias_value: bool = field(default=False)
 
 
+@dataclass(repr=False, eq=False, frozen=True, slots=True)
+class _TypeHint:
+    value: Any
+    origin: Any
+
+    @property
+    def args(self) -> tuple[Any, ...]:
+        return get_args(self.value)
+
+    @property
+    def generics(self) -> Mapping[TypeVar, Any]:
+        parameters = getattr(self.origin, "__parameters__", ())
+        return dict(zip(parameters, self.args))
+
+    @property
+    def is_none(self) -> bool:
+        return self.value in (None, NoneType)
+
+    @property
+    def is_union(self) -> bool:
+        return self.origin is Union or isinstance(self.value, UnionType)
+
+    @property
+    def target(self) -> Any:
+        return self.value if self.origin is None else self.origin
+
+    def apply_generics(self, generics: Mapping[TypeVar, Any]) -> Self:
+        if isinstance(self.value, TypeVar):
+            return self.from_value(generics.get(self.value, self.value))
+
+        if self.origin is None:
+            return self
+
+        if self.origin is Annotated:
+            return self.from_value(self.args[0]).apply_generics(generics)
+
+        args = tuple(
+            self.from_value(arg).apply_generics(generics).value for arg in self.args
+        )
+
+        if self.is_union:
+            return self.from_value(Union[*args])
+
+        return self.from_value(self.origin[*args])
+
+    @classmethod
+    def from_value(cls, value: Any) -> Self:
+        return cls(value, get_origin(value))
+
+
 _empty_config = MatchingTypesConfig()
 
 
@@ -30,8 +81,7 @@ def iter_matching_types(
     config: MatchingTypesConfig | None = None,
 ) -> Iterator[Any]:
     config = config or _empty_config
-    type_hints = (type_hint,)
-    return _iter_matching_types(type_hints, config)
+    return _iter_matching_types((type_hint,), config, {})
 
 
 def matching_types(
@@ -42,88 +92,63 @@ def matching_types(
     return tuple(dict.fromkeys(iter_matching_types(type_hint, config)))
 
 
-def _get_bases(type_hint: Any, origin: Any) -> tuple[Any, ...]:
-    target = type_hint if origin is None else origin
-
+def _iter_bases(type_hint: _TypeHint, config: MatchingTypesConfig) -> Iterator[Any]:
     try:
-        return get_original_bases(target)
+        bases = get_original_bases(type_hint.target)
     except TypeError:
-        return ()
+        return
 
-
-def _get_generics(type_hint: Any, origin: Any) -> Mapping[TypeVar, Any]:
-    args = get_args(type_hint)
-    parameters = getattr(origin, "__parameters__", ())
-    return dict(zip(parameters, args))
-
-
-def _is_type_var(type_hint: Any) -> bool:
-    return isinstance(type_hint, TypeVar)
-
-
-def _is_none_type(type_hint: Any) -> bool:
-    return type_hint in (None, NoneType)
+    yield from _iter_matching_types(bases, config, type_hint.generics)
 
 
 def _iter_matching_types(
     type_hints: Sequence[Any],
-    /,
     config: MatchingTypesConfig,
-    params: Mapping[TypeVar, Any] | None = None,
+    generics: Mapping[TypeVar, Any],
 ) -> Iterator[Any]:
-    if params is None:
-        params = {}
+    for value in type_hints:
+        type_hint = _TypeHint.from_value(value)
 
-    for type_hint in type_hints:
-        if config.ignore_none and _is_none_type(type_hint):
+        if type_hint.origin is Generic:
             continue
 
-        if _is_type_var(type_hint):
-            yield params.get(type_hint, type_hint)
-            continue
-
-        origin = get_origin(type_hint)
-
-        if origin is Generic:
-            continue
-
-        if unpacked_types := _unpack_types(type_hint, origin):
-            yield from _iter_matching_types(unpacked_types, config, params)
-            continue
-
-        if origin is None:
-            yield type_hint
-
-        else:
-            args = tuple(
-                next(_iter_matching_types((arg,), _empty_config, params))
-                for arg in get_args(type_hint)
-            )
-            yield origin[*args]
-
-            if config.with_origin:
-                yield origin
-
-        if config.with_bases and (bases := _get_bases(type_hint, origin)):
-            generics = _get_generics(type_hint, origin)
-            yield from _iter_matching_types(bases, config, generics)
-
-        if config.with_type_alias_value:
-            if isinstance(origin, TypeAliasType):
-                values = (origin.__value__,)
-                generics = _get_generics(type_hint, origin)
-                yield from _iter_matching_types(values, config, generics)
-
-            elif isinstance(type_hint, TypeAliasType):
-                values = (type_hint.__value__,)
-                yield from _iter_matching_types(values, config)
+        yield from _iter_type_hint_matching_types(
+            type_hint.apply_generics(generics),
+            config,
+        )
 
 
-def _unpack_types(type_hint: Any, origin: Any) -> Sequence[Any]:
-    if origin is Union or isinstance(type_hint, UnionType):
-        return get_args(type_hint)
+def _iter_type_alias_value(
+    type_hint: _TypeHint,
+    config: MatchingTypesConfig,
+) -> Iterator[Any]:
+    type_alias = type_hint.target
 
-    elif origin is Annotated:
-        return get_args(type_hint)[:1]
+    if not isinstance(type_alias, TypeAliasType):
+        return
 
-    return ()
+    values = (type_alias.__value__,)
+    yield from _iter_matching_types(values, config, type_hint.generics)
+
+
+def _iter_type_hint_matching_types(
+    type_hint: _TypeHint,
+    config: MatchingTypesConfig,
+) -> Iterator[Any]:
+    if config.ignore_none and type_hint.is_none:
+        return
+
+    if type_hint.is_union:
+        yield from _iter_matching_types(type_hint.args, config, {})
+        return
+
+    yield type_hint.value
+
+    if config.with_origin and type_hint.origin is not None:
+        yield type_hint.origin
+
+    if config.with_bases:
+        yield from _iter_bases(type_hint, config)
+
+    if config.with_type_alias_value:
+        yield from _iter_type_alias_value(type_hint, config)

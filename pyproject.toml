@@ -82,7 +82,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint]
-extend-select = ["I", "N"]
+extend-select = ["F", "I", "N"]
 fixable = ["ALL"]
 
 [tool.uv]
